@@ -1,0 +1,223 @@
+/* Import a modern font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+/* --- General Body & Background Styling --- */
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #0f172a;
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    background:linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5)),
+url("/Bacgrounds/background1.jpg");
+overflow: hidden;
+    background-size: cover;
+
+}
+
+/* --- The Main "Card" Container --- */
+.card {
+    background-color: #1e293b;
+    padding: 30px 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    width: 100%;
+    max-width: 800px;
+    overflow-y: hidden;
+}
+
+
+h1, h2 {
+    color: #ffffff;
+    margin-top: 0;
+    margin-bottom: 30px;
+}
+
+/* --- Layouts --- */
+.main-content {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    align-items: center;
+}
+
+.action-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 200px;
+    align-items: center;
+}
+
+.setup-page .main-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    overflow: hidden;
+}
+
+/* --- Nested Grid Styling --- */
+/* In style.css, replace the old nested grid styling section */
+
+/* --- Nested Grid Styling --- */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 8px;
+    width: 100%;
+    max-width: 450px;
+}
+
+.subgrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 2px;
+    aspect-ratio: 1 / 1;
+}
+
+.grid-cell {
+    position: relative;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: filter 0.2s ease-in-out;
+    aspect-ratio: 1 / 1;
+}
+
+.grid-cell::before {
+    content: attr(data-content);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: clamp(12px, 2.5vw, 18px);
+    color: #ffffff;
+    /* THE FIX: Add a transition for opacity */
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* NEW: This class will make the numbers invisible */
+.fade-out .grid-cell::before {
+    opacity: 0;
+}
+
+.grid-cell:hover {
+    filter: brightness(1.2);
+    z-index: 10;
+}
+
+.grid-cell.selected {
+    box-shadow: 0 0 15px 3px #38bdf8;
+}
+
+/* --- Keypad & Button Styling --- */
+#enteredPin {
+    font-family: monospace;
+    font-size: 2em;
+    letter-spacing: 8px;
+    height: 40px;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.keypad-keys {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+button {
+    font-family: 'Poppins', sans-serif;
+    background-color: #38bdf8;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+    background-color: #0ea5e9;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    transform: translateY(-2px);
+}
+
+.keypad-keys button {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+}
+
+.login-button {
+    margin-top: 30px;
+    padding: 15px 40px;
+    border: 2px solid #38bdf8;
+    background-color: transparent;
+}
+
+.login-button:hover {
+    border-color: #0ea5e9;
+    background-color: #38bdf8;
+}
+
+/* --- Home page button spacing --- */
+.connect-button {
+    padding: 15px 30px;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.menu {
+    display: flex;
+    justify-content: center;
+    gap: 45px;
+    padding: 15px 30px;   
+      
+}
+.menu button {
+    /* padding: 30px; Adjust padding to increase button size and clickable area */
+    font-size: 18px;   /* Increase font size for larger text */
+    /* Optional: Set a fixed width and height if needed */
+    width: 250px; 
+     height: 60px;
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+}
+/* Add this to the end of your style.css file */
+
+/* --- Animation for Incorrect PIN --- */
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}

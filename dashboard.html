@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="shortcut icon" href="/Favicons/favicon.png" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box; /* Fix for the scrollbar */
+        }
+        .menu {
+    display: flex;
+    justify-content: center;
+    gap: 45px;
+    padding: 15px 30px;   
+      
+}
+.menu button {
+    /* padding: 30px; Adjust padding to increase button size and clickable area */
+    font-size: 18px;   /* Increase font size for larger text */
+    /* Optional: Set a fixed width and height if needed */
+    width: 250px; 
+     height: 60px;
+}
+        .card{background-color:#1e293b;padding:40px;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.3);text-align:center;width:100%;max-width:800px}
+        h2{color:#fff;margin-top:0;margin-bottom:10px;font-size:2.5em}
+        p{margin-top:0;font-size:1.1em;color:#94a3b8}
+        .wallet-address{font-family:monospace;background-color:#0f172a;padding:10px 20px;border-radius:10px;margin:30px auto;word-wrap:break-word}
+        button{font-family:'Poppins',sans-serif;background-color:#38bdf8;color:#fff;border:none;border-radius:12px;padding:15px 30px;font-weight:600;cursor:pointer;transition:all .2s ease-in-out;font-size:16px;margin-top:10px; margin-left: 5px; margin-right: 5px;}
+        button:hover{background-color:#0ea5e9;box-shadow:0 4px 15px rgba(56,189,248,.3);transform:translateY(-2px)}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>✅ Access Granted</h2>
+        <p>You have successfully authenticated via the blockchain.</p>
+        <p><strong>Connected Wallet:</strong></p>
+        <div id="walletAddress" class="wallet-address">Loading...</div>
+        <div class="menu">
+            <button onclick="location.href='update.html'">Update Password</button>
+            <button onclick="logout()">Log Out</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const walletDiv = document.getElementById('walletAddress');
+            if (window.ethereum) {
+                try {
+                    const provider = new ethers.providers.Web3Provider(window.ethereum);
+                    await provider.send("eth_requestAccounts", []);
+                    const signer = provider.getSigner();
+                    const address = await signer.getAddress();
+                    walletDiv.textContent = address;
+                } catch (error) {
+                    console.error("Could not fetch wallet address:", error);
+                    walletDiv.textContent = "Error: Could not fetch address.";
+                }
+            } else {
+                walletDiv.textContent = "MetaMask is not installed.";
+            }
+        });
+        function logout() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
