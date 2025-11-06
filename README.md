@@ -1,6 +1,221 @@
-# Decentralized Grid Authentication 🛡️
+# 🧩 Decentralized Grid Authentication
 
-This project is a decentralized visual password system built on the Ethereum blockchain. Instead of a traditional text-based password, users authenticate by selecting a unique, sequential pattern of colors on a dynamic 9x9 grid. The user's secret pattern is encrypted end-to-end using a key derived from their wallet's signature and stored securely on-chain.
+*A blockchain-based prototype exploring client-side encryption and user-controlled authentication.*
+
+---
+
+## 🚀 Overview
+
+**Decentralized Grid Authentication (DGA)** is an academic project that demonstrates how **blockchain transparency** and **client-side cryptography** can be combined to design a visual, user-controlled authentication mechanism.
+Instead of a traditional password, users register by selecting a **pattern on a 9×9 color-coded grid**.
+The selected positions are **AES-encrypted client-side** (with a key derived from the user’s MetaMask wallet signature) and stored on the **Ethereum blockchain** through a **Solidity smart contract**.
+
+During login, the encrypted data is retrieved from the blockchain, **decrypted locally**, and matched against a dynamically randomized grid to verify the user’s identity — all without any centralized server.
+
+---
+
+## 🧠 Project Objectives
+
+* Explore **fully decentralized user registration** without central databases.
+* Study the **trade-offs** between decentralization, immutability, and privacy.
+* Implement **client-side AES encryption** integrated with **MetaMask signing**.
+* Analyze the viability of **visual grid-based authentication** on public blockchains.
+
+---
+
+## 🧭 System Architecture
+
+```
+                   ┌────────────────────────────────────┐
+                   │        🧩 User Interface (DApp)     │
+                   │------------------------------------│
+                   │  - 9×9 Dynamic Grid (HTML/CSS/JS)   │
+                   │  - User selects 4 secret positions  │
+                   │  - AES Encryption (CryptoJS)        │
+                   │  - MetaMask Integration (Ethers.js) │
+                   └────────────────────────────────────┘
+                                       │
+                                       │ (1) User connects MetaMask
+                                       ▼
+                      ┌────────────────────────────────────┐
+                      │       🔑 Wallet (MetaMask)          │
+                      │------------------------------------│
+                      │ - Generates key pair (public/private)
+                      │ - Signs message for key derivation
+                      │ - Approves blockchain transaction
+                      └────────────────────────────────────┘
+                                       │
+                                       │ (2) Key derived from signature
+                                       ▼
+                      ┌────────────────────────────────────┐
+                      │   🔒 Client-Side AES Encryption     │
+                      │------------------------------------│
+                      │ - Derives AES key from wallet sig  │
+                      │ - Encrypts grid pattern locally     │
+                      │ - Produces ciphertext string        │
+                      └────────────────────────────────────┘
+                                       │
+                                       │ (3) User confirms MetaMask tx
+                                       ▼
+                      ┌────────────────────────────────────┐
+                      │     ⛓️  Ethereum Blockchain         │
+                      │------------------------------------│
+                      │ - Executes GridAuth.sol contract    │
+                      │ - Stores ciphertext in mapping       │
+                      │   (address → encryptedPositions)     │
+                      │ - Emits Registered/Updated events   │
+                      └────────────────────────────────────┘
+                                       │
+                                       │ (4) Data stored immutably
+                                       ▼
+                      ┌────────────────────────────────────┐
+                      │        🧠 On-Chain State            │
+                      │------------------------------------│
+                      │ Example:                           │
+                      │ 0xABC123... → "U2FsdGVkX1+Z0W..."   │
+                      │ Public, but encrypted               │
+                      └────────────────────────────────────┘
+                                       │
+                                       │ (5) On login, retrieve ciphertext
+                                       ▼
+                      ┌────────────────────────────────────┐
+                      │     🔓 Client-Side Decryption       │
+                      │------------------------------------│
+                      │ - Wallet signs again (new session)  │
+                      │ - Re-derives AES key                │
+                      │ - Decrypts ciphertext               │
+                      │ - Matches pattern on randomized grid│
+                      └────────────────────────────────────┘
+                                       │
+                                       │ (6) Pattern verified locally
+                                       ▼
+                      ┌────────────────────────────────────┐
+                      │          🏁 Dashboard / Access       │
+                      │------------------------------------│
+                      │ - User authenticated locally        │
+                      │ - Blockchain acts as audit log      │
+                      └────────────────────────────────────┘
+```
+
+---
+
+### Core Components
+
+| Layer                         | Description                                                         |
+| ----------------------------- | ------------------------------------------------------------------- |
+| **Frontend (Vite + JS)**      | Handles grid rendering, encryption/decryption, MetaMask integration |
+| **Smart Contract (Solidity)** | Stores encrypted credentials mapped to wallet addresses             |
+| **Blockchain (Ethereum)**     | Provides decentralized, tamper-proof storage                        |
+| **MetaMask Wallet**           | Signs messages to derive encryption key                             |
+| **CryptoJS (AES)**            | Performs client-side encryption and decryption                      |
+
+---
+
+## ⚙️ Features
+
+* 🔐 **Grid-based visual password system** (9×9 dynamic layout)
+* 🧱 **Fully decentralized architecture** — no backend or database
+* 🧾 **Smart contract events** for verifiable registration logs
+* 🔑 **Client-side AES encryption** using MetaMask signatures
+* 🧩 **Randomized Sudoku-style grid generation** per session
+* ⚡ **Responsive UI** built with HTML, CSS, and vanilla JS (Vite bundler)
+
+---
+
+## 🧰 Tech Stack
+
+| Category                    | Technology                  |
+| --------------------------- | --------------------------- |
+| **Blockchain**              | Ethereum (EVM)              |
+| **Smart Contract Language** | Solidity `^0.8.20`          |
+| **Frontend**                | HTML, CSS, JavaScript, Vite |
+| **Web3 Library**            | Ethers.js                   |
+| **Encryption**              | AES (CryptoJS)              |
+| **Wallet Integration**      | MetaMask                    |
+| **Version Control**         | Git & GitHub                |
+
+---
+
+## 🧾 Smart Contract (GridAuth.sol)
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+contract GridAuth {
+    struct User {
+        string encryptedPositions;
+        bool exists;
+    }
+
+    mapping(address => User) private users;
+    event Registered(address indexed user);
+    event PasswordUpdated(address indexed user);
+
+    function register(string calldata _encryptedPositions) external {
+        require(!users[msg.sender].exists, "User already exists");
+        users[msg.sender] = User(_encryptedPositions, true);
+        emit Registered(msg.sender);
+    }
+
+    function updatePassword(string calldata _encryptedPositions) external {
+        require(users[msg.sender].exists, "User not found");
+        users[msg.sender].encryptedPositions = _encryptedPositions;
+        emit PasswordUpdated(msg.sender);
+    }
+
+    function getMyPositions() external view returns (string memory) {
+        require(users[msg.sender].exists, "User not found");
+        return users[msg.sender].encryptedPositions;
+    }
+}
+```
+
+---
+
+## 🧩 How It Works
+
+1. **Connect MetaMask** → User authorizes wallet.
+2. **Register Pattern** → User selects 4 grid positions → AES encrypts locally.
+3. **On-chain Storage** → Encrypted data is stored via the `register()` function.
+4. **Login / Unlock** → User signs again → key derived → decrypts and validates positions.
+5. **Access Granted** → On successful match, dashboard unlocks.
+
+---
+
+## 🧪 Setup & Deployment
+
+### Prerequisites
+
+* Node.js & npm
+* MetaMask browser extension
+* Ethereum testnet (e.g., Sepolia or Goerli)
+* Hardhat or Remix IDE
+
+### Local Run
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Rudrateja123/Decentralized-Grid-Authentication.git
+cd Decentralized-Grid-Authentication
+
+# 2. Install dependencies
+npm install
+
+# 3. Start local server
+npm run dev
+```
+
+### Deploy Contract
+
+* Compile `GridAuth.sol` using Remix or Hardhat.
+* Deploy to a testnet and copy the **contract address**.
+* Paste the address & ABI in `script.js` under:
+
+  ```js
+  const CONTRACT_ADDRESS = "<your_deployed_address>";
+  const CONTRACT_ABI = [ ... ];
+  ```
 
 ---
 
@@ -106,72 +321,131 @@ Here is a step-by-step walkthrough of the application's user flow.
 
 ---
 
-## ✨ Core Features
 
-* **Decentralized Authentication:** User credentials are not stored on a central server, eliminating a major attack vector.
-* **End-to-End Encryption:** The secret password pattern is encrypted in the browser before being sent to the smart contract. It can only be decrypted by the user after they provide a valid signature.
-* **Signature-Based Keys:** A unique and secure encryption key is generated on the fly from the user's cryptographic signature, meaning the key is never stored anywhere.
-* **Dynamic PIN System:** The visual grid randomizes on every login, making the system highly resistant to shoulder-surfing and replay attacks.
-* **Web3 Integration:** Connects seamlessly with MetaMask for user identity, transaction signing, and message signing.
 
----
+### 🔄 Data Flow Summary
 
-## 🚀 How It Works
-
-1.  **Setup:** A user connects their MetaMask wallet and selects a 4-box pattern. They are then prompted to sign a message, which generates a unique signature. This signature is used as a secret key to encrypt the pattern's data. The resulting ciphertext is stored on the smart contract.
-2.  **Login:** The user is presented with a new, randomized grid and enters the 4-digit PIN corresponding to their secret pattern.
-3.  **Decryption & Verification:** The user is asked to sign the same message again to re-generate the secret key. The application fetches the ciphertext from the blockchain, decrypts it using the new key, and verifies that the entered PIN matches the decrypted pattern.
+| Step | Action                 | Location   | Description                           |
+| ---- | ---------------------- | ---------- | ------------------------------------- |
+| 1️⃣  | User connects MetaMask | Browser    | Requests wallet access                |
+| 2️⃣  | Pattern selected       | Client     | User picks 4 grid cells               |
+| 3️⃣  | Encrypt pattern        | Client     | AES encryption using wallet signature |
+| 4️⃣  | Store ciphertext       | Blockchain | `register()` call → stored immutably  |
+| 5️⃣  | Retrieve + decrypt     | Client     | `getMyPositions()` → AES decrypt      |
+| 6️⃣  | Verify grid pattern    | Client     | Matches pattern → grants access       |
 
 ---
 
-## 🛠️ Technology Stack
+## ⚖️ Security & Trade-offs
 
-* **Frontend:** HTML5, CSS3, JavaScript (ES6+ Modules)
-* **Blockchain:** Solidity, Ethereum (Sepolia Testnet)
-* **Web3 Integration:** Ethers.js v5
-* **Build Tool:** Vite with npm
-* **Encryption:** `crypto-js` (AES)
-
----
-
-## ⚙️ Setup and Installation
-
-This guide will walk you through setting up the project from scratch.
-
-### **Step 1: Install Prerequisites**
-
-* A modern browser like **Google Chrome** with the **[MetaMask](https://metamask.io/)** extension.
-* **[Node.js](https://nodejs.org/)** (which includes npm).
-* **[Git](https://git-scm.com/)**.
-
-### **Step 2: Set Up MetaMask & Testnet**
-
-1.  **Create a Wallet:** Set up a new, clean wallet in MetaMask for testing.
-2.  **Switch to Sepolia:** In MetaMask, switch the network to the **Sepolia** testnet.
-3.  **Get Test ETH:** Use a public faucet (e.g., [sepolia-faucet.pk910.de](https://sepolia-faucet.pk910.de/)) to get free test ETH for your new wallet.
-
-### **Step 3: Run the Project Locally**
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/Rudrateja123/Decentralized-Grid-Authentication.git](https://github.com/Rudrateja123/Decentralized-Grid-Authentication.git)
-    cd Decentralized-Grid-Authentication
-    ```
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-3.  **Configure the Smart Contract:**
-    * Deploy the `GridAuth.sol` contract (the version that stores an encrypted string) to the Sepolia testnet using Remix IDE.
-    * Open `script.js` and update the `CONTRACT_ADDRESS` and `CONTRACT_ABI` variables with your new deployment details.
-4.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-    The project will now be running in your browser, typically at `http://localhost:5173`.
+| Property               | Description                                                         |
+| ---------------------- | ------------------------------------------------------------------- |
+| **Transparency**       | All ciphertexts are public (as in any blockchain).                  |
+| **Confidentiality**    | Protected by AES client-side encryption (dependent on key entropy). |
+| **Immutability**       | Once registered, data is permanent and auditable.                   |
+| **No Central Control** | Users own and manage their encrypted data.                          |
+| **Trade-off**          | Decentralization vs. privacy — explored as a research question.     |
 
 ---
 
-## 📄 License
+## 🚀 Future Enhancements
 
-This project is licensed under the MIT License.
+#### 🔐 1. Off-Chain Authentication Layer
+
+* Move verification off-chain using **EIP-712 signed challenges** rather than static AES keys.
+* Prevent replay attacks and enable **non-deterministic session-based keys**.
+
+#### 🧠 2. Stronger Cryptographic Design
+
+* Replace AES-CBC with **AES-GCM** or **WebCrypto API** for confidentiality + integrity.
+* Use **Argon2id or PBKDF2** for salted key derivation.
+
+#### 🪪 3. DID (Decentralized Identity) Integration
+
+* Integrate **DIDs / Verifiable Credentials** for privacy-preserving authentication.
+* Use grid pattern as a secondary cognitive factor.
+
+#### 💾 4. Hybrid Storage Model
+
+* Store ciphertexts off-chain (e.g., **IPFS**) and retain only their hash on-chain.
+* Improves privacy and scalability.
+
+#### 🧩 5. Entropy-Enhanced Grid System
+
+* Introduce **color mapping, rotation, or multiple round selections** to boost entropy.
+* Study human memorability vs. randomness trade-offs.
+
+#### ⚡ 6. Improved UI/UX & Metrics
+
+* Add encryption performance analytics.
+* Enhance visual accessibility and mobile support.
+
+#### 🔄 7. Account Recovery & Key Rotation
+
+* Implement optional **recovery / guardian models** and **key rotation events**.
+
+---
+
+### 🧭 Long-Term Research Goals
+
+* Evaluate **usability vs. entropy** in visual authentication.
+* Analyze **on-chain vs. off-chain** security models.
+* Investigate **Zero-Knowledge Proofs (ZKPs)** for privacy-preserving verification.
+
+---
+
+### 🎓 Research Significance & Academic Contribution
+
+This project contributes to ongoing research in **decentralized authentication systems** by demonstrating a fully **client-controlled identity mechanism** that operates without centralized servers.
+Unlike traditional login systems that rely on password databases, this model integrates **blockchain immutability**, **client-side encryption**, and **human-centric authentication** to study how users can independently manage their own credentials.
+
+From a research perspective, the **Decentralized Grid Authentication (DGA)** prototype explores:
+
+* The **feasibility of visual grid-based secrets** as an alternative to textual passwords.
+* The **interaction between transparency and privacy** in blockchain-based storage.
+* The **security trade-offs** of performing all encryption, decryption, and verification client-side.
+
+Through this prototype, the project identifies practical and theoretical limits of **storing encrypted data on public blockchains**, and provides a foundation for future work on hybrid decentralized authentication systems combining **blockchain identity, client cryptography, and usability engineering**.
+
+---
+
+## 👥 Contributors
+
+| Name                 | GitHub                                               |
+| -------------------- | ---------------------------------------------------- |
+| **Rudra Teja Baswa** | [@Rudrateja123](https://github.com/Rudrateja123) |
+| **Shaik Abu Saif**   | [@Abusaif16](https://github.com/Abusaif16)        |
+
+---
+
+## 📚 Academic Context
+
+This project was developed as part of an **undergraduate academic research effort** on decentralized authentication mechanisms in the Department of Computer Science & Engineering.
+It is intended as a **proof-of-concept** to explore usability and security trade-offs in blockchain-based user authentication systems.
+
+---
+
+## 🧩 Disclaimer
+
+This project is a **research prototype** — **not a production authentication system.**
+It demonstrates blockchain integration and encryption concepts for academic and educational purposes.
+No sensitive real-world credentials should be used.
+
+---
+
+## 📜 License
+
+MIT License © 2025 Rudra Teja Baswa & Shaik Abu Saif
+
+---
+
+## 🌐 References
+
+* Ethereum Documentation – [https://ethereum.org](https://ethereum.org)
+* Solidity Docs – [https://docs.soliditylang.org](https://docs.soliditylang.org)
+* MetaMask API – [https://docs.metamask.io](https://docs.metamask.io)
+* CryptoJS – [https://github.com/brix/crypto-js](https://github.com/brix/crypto-js)
+* Vite – [https://vitejs.dev](https://vitejs.dev)
+* Ethers.js – [https://docs.ethers.io](https://docs.ethers.io)
+
+---
