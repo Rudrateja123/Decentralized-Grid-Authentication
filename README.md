@@ -415,6 +415,7 @@ Through this prototype, the project identifies practical and theoretical limits 
 | -------------------- | ---------------------------------------------------- |
 | **Rudra Teja Baswa** | [@Rudrateja123](https://github.com/Rudrateja123) |
 | **Shaik Abu Saif**   | [@Abusaif16](https://github.com/Abusaif16)        |
+| **Srujan Chowdary**  | [@srujansagg29](https://github.com/srujansagg29)   |
 
 ---
 
